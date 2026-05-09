@@ -415,7 +415,7 @@
   </div>
 
   <script type="module">
-    import { init } from "https://esm.sh/@instantdb/core@1.0.22";
+    import { init, tx } from "https://esm.sh/@instantdb/core@1.0.22";
 
     // 1) Creá una app en https://instantdb.com/dash
     // 2) Copiá el Public App ID
@@ -719,7 +719,7 @@
       if (!requireName()) return;
       const code = randomRoomCode();
       await db.transact(
-        db.tx.spyfallRooms[code].update({
+        tx.spyfallRooms[code].update({
           code,
           hostId: state.playerId,
           players: [playerObject()],
@@ -797,7 +797,7 @@
     async function updateRoom(patch) {
       if (!state.roomCode) return;
       await db.transact(
-        db.tx.spyfallRooms[state.roomCode].update({
+        tx.spyfallRooms[state.roomCode].update({
           ...patch,
           updatedAt: Date.now(),
         })
