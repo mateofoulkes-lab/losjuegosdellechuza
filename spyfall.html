@@ -415,7 +415,7 @@
   </div>
 
   <script type="module">
-    import { init, tx } from "https://esm.sh/@instantdb/core@1.0.22";
+    import { init } from "https://esm.sh/@instantdb/core@1.0.22";
 
     // 1) Creá una app en https://instantdb.com/dash
     // 2) Copiá el Public App ID
@@ -454,107 +454,6 @@
       "Cancha de fútbol",
       "Shopping",
       "Taller mecánico",
-      "Panadería",
-      "Heladería",
-      "Pizzería",
-      "Cafetería",
-      "Restaurante de comida rápida",
-      "Food truck",
-      "Mercado medieval",
-      "Feria artesanal",
-      "Ferretería",
-      "Librería",
-      "Juguetería",
-      "Tienda de antigüedades",
-      "Peluquería",
-      "Barbería",
-      "Gimnasio",
-      "Pileta pública",
-      "Club de barrio",
-      "Estadio olímpico",
-      "Vestuario deportivo",
-      "Cabina de transmisión",
-      "Radio local",
-      "Set de televisión",
-      "Estudio de grabación",
-      "Teatro",
-      "Camarín",
-      "Ópera",
-      "Sala de ensayo",
-      "Escenario de festival",
-      "Backstage",
-      "Boliche",
-      "Karaoke",
-      "Salón de fiestas",
-      "Casamiento",
-      "Cumpleaños infantil",
-      "Funeral",
-      "Iglesia",
-      "Templo antiguo",
-      "Monasterio",
-      "Cementerio",
-      "Cripta",
-      "Catacumbas",
-      "Ruinas arqueológicas",
-      "Pirámide egipcia",
-      "Coliseo romano",
-      "Muralla china",
-      "Torre de vigilancia",
-      "Faro",
-      "Puerto",
-      "Astillero",
-      "Barco pesquero",
-      "Yate privado",
-      "Plataforma petrolera",
-      "Estación de tren",
-      "Terminal de ómnibus",
-      "Subte",
-      "Taxi",
-      "Colectivo",
-      "Avión privado",
-      "Globo aerostático",
-      "Dirigible",
-      "Estación de servicio",
-      "Autocine",
-      "Ruta desierta",
-      "Peaje",
-      "Depósito",
-      "Centro de distribución",
-      "Oficina corporativa",
-      "Sala de reuniones",
-      "Call center",
-      "Banco",
-      "Bóveda bancaria",
-      "Casa de cambio",
-      "Correo",
-      "Municipalidad",
-      "Tribunal",
-      "Cárcel",
-      "Cuartel de bomberos",
-      "Ambulancia",
-      "Sala de emergencias",
-      "Farmacia",
-      "Veterinaria",
-      "Zoológico",
-      "Acuario",
-      "Reserva natural",
-      "Campamento",
-      "Cabaña en el bosque",
-      "Refugio de montaña",
-      "Cueva",
-      "Volcán",
-      "Desierto",
-      "Oasis",
-      "Selva",
-      "Pantano",
-      "Lago congelado",
-      "Pueblo fantasma",
-      "Granja",
-      "Establo",
-      "Viñedo",
-      "Bodega",
-      "Fábrica abandonada",
-      "Central nuclear",
       "Búnker secreto"
     ];
 
@@ -718,17 +617,23 @@
     async function createRoom() {
       if (!requireName()) return;
       const code = randomRoomCode();
-      await db.transact(
-        tx.spyfallRooms[code].update({
-          code,
-          hostId: state.playerId,
-          players: [playerObject()],
-          round: null,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        })
-      );
-      enterRoom(code);
+
+      try {
+        await db.transact(
+          db.tx.spyfallRooms[code].update({
+            code,
+            hostId: state.playerId,
+            players: [playerObject()],
+            round: null,
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          })
+        );
+        enterRoom(code);
+      } catch (err) {
+        console.error(err);
+        showNotice("No pude crear la sala. Revisá permisos/schema en InstantDB. Detalle: " + (err?.message || err), "danger");
+      }
     }
 
     function joinRoom() {
@@ -796,12 +701,18 @@
 
     async function updateRoom(patch) {
       if (!state.roomCode) return;
-      await db.transact(
-        tx.spyfallRooms[state.roomCode].update({
-          ...patch,
-          updatedAt: Date.now(),
-        })
-      );
+
+      try {
+        await db.transact(
+          db.tx.spyfallRooms[state.roomCode].update({
+            ...patch,
+            updatedAt: Date.now(),
+          })
+        );
+      } catch (err) {
+        console.error(err);
+        showNotice("No pude guardar el cambio en InstantDB. Detalle: " + (err?.message || err), "danger");
+      }
     }
 
     function getPlayers() {
